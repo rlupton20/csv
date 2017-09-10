@@ -18,10 +18,15 @@ fn main() {
             break;
         }
         let columns: Vec<&str> = get_columns(&buffer, ',');
-        for i in indices.iter() {
-            print!("{}, ", columns[*i]);
+
+        let mut iterator = indices.iter().peekable();
+        while let Some(v) = iterator.next() {
+            print!("{}", columns[*v]);
+            match iterator.peek() {
+                None => print!("\n"),
+                Some(_) => print!(", "),
+            }
         }
-        print!("\n");
     }
 }
 
