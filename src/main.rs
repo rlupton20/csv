@@ -3,6 +3,8 @@ extern crate clap;
 use clap::{App, Arg};
 use std::io;
 
+use std::iter::Peekable;
+
 fn main() {
     let matches = App::new("csv")
         .version("0.1")
@@ -31,13 +33,8 @@ fn main() {
     let indices: Vec<usize> = get_column_indices(&headings, &seek);
 
     // Print column headings
-    let mut iterator = seek.iter().peekable();
-    while let Some(v) = iterator.next() {
-        print!("{}", v);
-        match iterator.peek() {
-            None => print!("\n"),
-            Some(_) => print!(", "),
-        }
+    for (v, last) in FlagLast::from_iter(seek.iter()) {
+        print!("{}{}", v, if last { "\n" } else { ", " });
     }
 
     // Print filtered columns
@@ -48,14 +45,8 @@ fn main() {
         }
 
         let columns: Vec<&str> = get_columns(&buffer, ',');
-
-        let mut iterator = indices.iter().peekable();
-        while let Some(v) = iterator.next() {
-            print!("{}", columns[*v]);
-            match iterator.peek() {
-                None => print!("\n"),
-                Some(_) => print!(", "),
-            }
+        for (i, last) in FlagLast::from_iter(indices.iter()) {
+            print!("{}{}", columns[*i], if last { "\n" } else { ", " });
         }
     }
 }
@@ -81,6 +72,41 @@ fn get_column_indices(headings: &Vec<&str>, seek: &Vec<&str>) -> Vec<usize> {
         indices.push(i);
     }
     indices
+}
+
+struct FlagLast<I>
+where
+    I: Iterator,
+{
+    iterator: Peekable<I>,
+}
+
+impl<I> FlagLast<I>
+where
+    I: Iterator,
+{
+    fn from_iter(i: I) -> FlagLast<I> {
+        FlagLast { iterator: i.peekable() }
+    }
+}
+
+impl<I> Iterator for FlagLast<I>
+where
+    I: Iterator,
+{
+    type Item = (<I as Iterator>::Item, bool);
+
+    fn next(&mut self) -> Option<(<I as Iterator>::Item, bool)> {
+        match self.iterator.next() {
+            None => None,
+            Some(v) => {
+                match self.iterator.peek() {
+                    None => Some((v, true)),
+                    Some(_) => Some((v, false)),
+                }
+            }
+        }
+    }
 }
 
 
@@ -135,4 +161,38 @@ fn test_get_column_indices() {
     let result: Vec<usize> = get_column_indices(&headings, &seek);
     let expected: Vec<usize> = vec![1, 3];
     assert_eq!(expected, result);
+}
+
+#[test]
+fn test_flag_last_iterator_by_step_through() {
+    let v = vec![1, 2, 3];
+    let mut iterator = FlagLast::from_iter(v.iter());
+
+    if let Some((n, b)) = iterator.next() {
+        assert_eq!(1, *n);
+        assert_eq!(false, b);
+    } else {
+        assert!(false);
+    }
+
+    if let Some((n, b)) = iterator.next() {
+        assert_eq!(2, *n);
+        assert_eq!(false, b);
+    } else {
+        assert!(false);
+    }
+
+    if let Some((n, b)) = iterator.next() {
+        assert_eq!(3, *n);
+        assert_eq!(true, b);
+    } else {
+        assert!(false);
+    }
+
+    if let None = iterator.next() {
+        // All is well
+    } else {
+        assert!(false);
+    }
+
 }
