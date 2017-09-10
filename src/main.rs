@@ -1,11 +1,58 @@
+use std::io;
+
 fn main() {
-    println!("Hello, world!");
+    let mut buffer: String = String::new();
+    let mut header_buffer: String = String::new();
+    let stdin: io::Stdin = io::stdin();
+    stdin.read_line(&mut header_buffer).expect(
+        "Failed to read stdin",
+    );
+
+    let seek: Vec<&str> = vec!["foo", "baz"];
+    let headings: Vec<&str> = get_columns(&header_buffer, ',');
+    let indices: Vec<usize> = get_column_indices(&headings, &seek);
+
+    loop {
+        buffer.clear();
+        if stdin.read_line(&mut buffer).expect("Failed to read stdin") == 0 {
+            break;
+        }
+        let columns: Vec<&str> = get_columns(&buffer, ',');
+        for i in indices.iter() {
+            print!("{}, ", columns[*i]);
+        }
+        print!("\n");
+    }
 }
+
 
 fn get_columns(s: &String, sep: char) -> Vec<&str> {
     s.trim().split(sep).map(|s| s.trim()).collect()
 }
 
+fn locate(s: &str, v: &Vec<&str>) -> Option<usize> {
+    for (i, x) in v.iter().enumerate() {
+        if *x == s {
+            return Some(i);
+        }
+    }
+    None
+}
+
+fn get_column_indices(headings: &Vec<&str>, seek: &Vec<&str>) -> Vec<usize> {
+    let mut indices: Vec<usize> = vec![];
+    for c in seek.iter() {
+        let i: usize = locate(c, headings).expect("Heading not present");
+        indices.push(i);
+    }
+    indices
+}
+
+
+
+// *****************************************************************************
+// * Tests
+// *****************************************************************************
 #[test]
 fn test_get_columns_with_commas() {
     let line: String = String::from("foo,bar,baz");
@@ -30,52 +77,20 @@ fn test_get_columns_strips_header_whitespace() {
     assert_eq!(expected, result);
 }
 
-
-struct SortedVector {
-    v: Vec<usize>,
-}
-
-impl SortedVector {
-    fn new() -> SortedVector {
-        SortedVector { v: vec![] }
-    }
-
-    fn insert(mut self, x: usize) -> SortedVector {
-        match self.v.binary_search(&x) {
-            Ok(p) => self.v.insert(p, x),
-            Err(p) => self.v.insert(p, x),
-        }
-        self
-    }
-}
-
 #[test]
-fn test_sorted_vector_new_insert() {
-    let result: Vec<usize> = SortedVector::new().insert(1).insert(2).v;
-    let expected = vec![1, 2];
+fn test_locate_finds_string_at_correct_index() {
+    let v: Vec<&str> = vec!["foo", "bar", "baz"];
+    let result: Option<usize> = locate("bar", &v);
+    let expected: Option<usize> = Some(1);
     assert_eq!(expected, result);
 }
 
 #[test]
-fn test_sorted_vector_existing_insert() {
-    let result: Vec<usize> = SortedVector::new()
-        .insert(0)
-        .insert(1)
-        .insert(1)
-        .insert(2)
-        .v;
-    let expected = vec![0, 1, 1, 2];
+fn test_locate_returns_failure_on_non_existant_string() {
+    let v: Vec<&str> = vec!["foo", "bar", "baz"];
+    let result: Option<usize> = locate("foobar", &v);
+    let expected: Option<usize> = None;
     assert_eq!(expected, result);
-}
-
-
-fn get_column_indices(headings: &Vec<&str>, seek: &Vec<&str>) -> Vec<usize> {
-    let mut indices: SortedVector = SortedVector::new();
-    for c in seek.iter() {
-        let i: usize = headings.binary_search(c).expect("Heading not present");
-        indices = indices.insert(i);
-    }
-    indices.v
 }
 
 #[test]
