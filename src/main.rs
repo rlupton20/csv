@@ -1,6 +1,23 @@
+extern crate clap;
+
+use clap::{App, Arg};
 use std::io;
 
 fn main() {
+    let matches = App::new("csv")
+        .version("0.1")
+        .about("Extracts columns from CSV files")
+        .author("Richard Lupton")
+        .arg(
+            Arg::with_name("columns")
+                .multiple(true)
+                .takes_value(true)
+                .number_of_values(1),
+        )
+        .get_matches();
+
+    let seek: Vec<&str> = matches.values_of("columns").unwrap().collect();
+
     let mut buffer: String = String::new();
     let mut header_buffer: String = String::new();
 
@@ -9,7 +26,6 @@ fn main() {
         "Failed to read stdin",
     );
 
-    let seek: Vec<&str> = vec!["foo", "baz"];
     let headings: Vec<&str> = get_columns(&header_buffer, ',');
     let indices: Vec<usize> = get_column_indices(&headings, &seek);
 
