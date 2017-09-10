@@ -3,6 +3,7 @@ use std::io;
 fn main() {
     let mut buffer: String = String::new();
     let mut header_buffer: String = String::new();
+
     let stdin: io::Stdin = io::stdin();
     stdin.read_line(&mut header_buffer).expect(
         "Failed to read stdin",
@@ -12,11 +13,23 @@ fn main() {
     let headings: Vec<&str> = get_columns(&header_buffer, ',');
     let indices: Vec<usize> = get_column_indices(&headings, &seek);
 
+    // Print column headings
+    let mut iterator = seek.iter().peekable();
+    while let Some(v) = iterator.next() {
+        print!("{}", v);
+        match iterator.peek() {
+            None => print!("\n"),
+            Some(_) => print!(", "),
+        }
+    }
+
+    // Print filtered columns
     loop {
         buffer.clear();
         if stdin.read_line(&mut buffer).expect("Failed to read stdin") == 0 {
             break;
         }
+
         let columns: Vec<&str> = get_columns(&buffer, ',');
 
         let mut iterator = indices.iter().peekable();
