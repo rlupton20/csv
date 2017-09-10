@@ -12,6 +12,7 @@ fn main() {
             Arg::with_name("columns")
                 .multiple(true)
                 .takes_value(true)
+                .required(true)
                 .number_of_values(1),
         )
         .get_matches();
