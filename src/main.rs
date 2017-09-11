@@ -9,7 +9,7 @@ fn main() {
     let matches = App::new("csv")
         .version("0.1")
         .about("Extracts columns from CSV files")
-        .author("Richard Lupton")
+        .author("Richard Lupton 2017")
         .arg(
             Arg::with_name("columns")
                 .multiple(true)
@@ -52,7 +52,7 @@ fn main() {
 }
 
 
-fn get_columns(s: &String, sep: char) -> Vec<&str> {
+fn get_columns(s: &str, sep: char) -> Vec<&str> {
     s.trim().split(sep).map(|s| s.trim()).collect()
 }
 
@@ -116,7 +116,7 @@ where
 // *****************************************************************************
 #[test]
 fn test_get_columns_with_commas() {
-    let line: String = String::from("foo,bar,baz");
+    let line: &str = "foo, bar, baz";
     let result: Vec<&str> = get_columns(&line, ',');
     let expected: Vec<&str> = vec!["foo", "bar", "baz"];
     assert_eq!(expected, result);
@@ -124,7 +124,7 @@ fn test_get_columns_with_commas() {
 
 #[test]
 fn test_get_columns_with_semicolons() {
-    let line: String = String::from("foo;bar;baz");
+    let line: &str = "foo;bar;baz";
     let result: Vec<&str> = get_columns(&line, ';');
     let expected: Vec<&str> = vec!["foo", "bar", "baz"];
     assert_eq!(expected, result);
@@ -132,7 +132,7 @@ fn test_get_columns_with_semicolons() {
 
 #[test]
 fn test_get_columns_strips_header_whitespace() {
-    let line: String = String::from("   foo,  bar,    baz");
+    let line: &str = "   foo,  bar,    baz";
     let result: Vec<&str> = get_columns(&line, ',');
     let expected: Vec<&str> = vec!["foo", "bar", "baz"];
     assert_eq!(expected, result);
