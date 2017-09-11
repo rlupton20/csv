@@ -34,7 +34,7 @@ fn main() {
 
     // Print column headings
     for (v, last) in FlagLast::from_iter(seek.iter()) {
-        print!("{}{}", v, if last { "\n" } else { ", " });
+        print!("{}{}", v, if last { "\n" } else { "," });
     }
 
     // Print filtered columns
@@ -46,7 +46,7 @@ fn main() {
 
         let columns: Vec<&str> = get_columns(&buffer, ',');
         for (i, last) in FlagLast::from_iter(indices.iter()) {
-            print!("{}{}", columns[*i], if last { "\n" } else { ", " });
+            print!("{}{}", columns[*i], if last { "\n" } else { "," });
         }
     }
 }
