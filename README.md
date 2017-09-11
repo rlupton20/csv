@@ -17,10 +17,10 @@ you can filter it through csv by providing a list of column names
 
 ```
 $ cat test.csv | csv foo baz
-foo, baz
-1, 3
-4, 6
-7, 9
+foo,baz
+1,3
+4,6
+7,9
 ```
 
 ## Building from source
